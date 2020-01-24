@@ -16,3 +16,8 @@ jobs:
           docker build .
           docker tag servertest_serverless:latest irynalian/serverless:latest
           docker push serverless:latest
+
+workflows:
+  build:
+    jobs:
+      - docker-build-push
