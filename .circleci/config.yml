@@ -2,7 +2,7 @@ version: 2.1
 
 references:
   ci_image: &ci_image
-    image: circleci/node:12-alpine
+    image: circleci/node:latest
 
 jobs:
   docker-build-push:
