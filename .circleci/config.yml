@@ -12,10 +12,8 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: echo "${DOCKERHUB_TOKEN}" | docker login --username="irynalian" --password-stdin
-      - run: |
-          docker build .
-          docker tag servertest_serverless:latest irynalian/serverless:latest
-          docker push serverless:latest
+      - run: docker build -t irynalian/serverless:latest .
+      - run: docker push irynalian/serverless:latest
 
 workflows:
   build:
