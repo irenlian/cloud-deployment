@@ -1,0 +1,8 @@
+version: '3'
+services:
+  serverless:
+    build: .
+    ports:
+      - 3000:3000
+      - 9229:9229
+    command: ["npm", "run", "server"]

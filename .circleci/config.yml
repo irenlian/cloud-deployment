@@ -1,0 +1,18 @@
+version: 2.1
+
+references:
+  ci_image: &ci_image
+    image: circleci/node:12-alpine
+
+jobs:
+  docker-build-push:
+    docker:
+      - *ci_image
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: echo "${DOCKERHUB_TOKEN}" | docker login --username="irynalian" --password-stdin
+      - run: |
+          docker build .
+          docker tag servertest_serverless:latest irynalian/serverless:latest
+          docker push serverless:latest

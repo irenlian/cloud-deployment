@@ -1,0 +1,9 @@
+node_modules/
+compiled_components/
+*bundle.js
+.DS_Store
+src/.env
+/newrelic_agent.log
+.idea
+.vscode
+dist/
