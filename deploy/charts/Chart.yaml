@@ -1,0 +1,6 @@
+apiVersion: v1
+description: Serverless Training
+name: serverless
+version: 0.1.0
+sources:
+  - https://github.com/Somaliika/serverless

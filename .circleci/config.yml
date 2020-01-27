@@ -5,7 +5,7 @@ references:
     image: circleci/node:latest
 
 jobs:
-  docker-build-push:
+  docker-build-push-to-dockerhub:
     docker:
       - *ci_image
     steps:
@@ -14,8 +14,27 @@ jobs:
       - run: echo "${DOCKERHUB_TOKEN}" | docker login --username="irynalian" --password-stdin
       - run: docker build -t irynalian/serverless:latest .
       - run: docker push irynalian/serverless:latest
+  deploy:
+    docker:
+      - *ci_image
+    steps:
+      - checkout
+      - run:
+          name: Helm Lint
+          command: helm lint --strict -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME}
+      - run:
+          name: Helm Template and Kubeval
+          command: helm template -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME} | kubeval
+      - run:
+          name: Prepare kubectl
+          command: prepare-kubectl
+      - run:
+          name: Helm Deploy
+          command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
+            helm-deploy -f deploy/${CI_ENV}/config.env
 
 workflows:
   build:
     jobs:
-      - docker-build-push
+      - docker-build-push-to-dockerhub
+      - deploy

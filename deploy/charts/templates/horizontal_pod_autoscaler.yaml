@@ -1,0 +1,19 @@
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    chart_version: {{ .Chart.Version | quote }}
+    helm_revision: {{ .Release.Revision | quote }}
+    helm_release: {{ .Release.Name | quote }}
+{{ toYaml .Values.labels | indent 4 }}
+spec:
+  minReplicas: {{ .Values.replicas }}
+  maxReplicas: {{ default 1 .Values.hpa.maxReplicas }}
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: {{ .Release.Name }}
+  targetCPUUtilizationPercentage: {{ .Values.hpa.cpuPercentage }}
+{{- end }}

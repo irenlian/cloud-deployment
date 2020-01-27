@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    helm_chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    helm_revision: {{ .Release.Revision | quote }}
+    helm_release: {{ .Release.Name | quote }}
+{{ toYaml .Values.labels | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+{{ toYaml .Values.labels | indent 6 }}
+  template:
+    metadata:
+      labels:
+{{ toYaml .Values.labels | indent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+              name: http
+          {{- if .Values.health_probes.enabled }}
+{{ toYaml .Values.health_probes.probes | indent 10 }}
+          {{- end }}
+          {{- if .Values.compute_resources.enabled }}
+          resources:
+{{ toYaml .Values.compute_resources.resources | indent 12 }}
+          {{- end }}

@@ -1,0 +1,47 @@
+replicas: 1
+containerPort: 3000
+
+labels:
+  app: &service_name serverless
+
+image:
+  repository: hub.docker.com/r/irynalian/serverless
+  tag: {}
+
+hpa:
+  enabled:
+  cpuPercentage: 65
+  maxReplicas: 5
+
+compute_resources:
+  enabled:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 768Mi
+
+health_probes:
+  enabled:
+  probes:
+    readinessProbe:
+      httpGet:
+        path: /status
+        port: http
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      failureThreshold: 5
+    livenessProbe:
+      httpGet:
+        path: /status
+        port: http
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      failureThreshold: 5
+
+envConfig:
+  LOG_LEVEL: "debug"
+  PORT: "3000"
