@@ -3,6 +3,8 @@ version: 2.1
 references:
   ci_image: &ci_image
     image: circleci/node:latest
+  terraform_image: &terraform_image
+    image: hashicorp/terraform:0.12.20
 
 jobs:
   docker-build-push-to-dockerhub:
@@ -14,6 +16,37 @@ jobs:
       - run: echo "${DOCKERHUB_TOKEN}" | docker login --username="irynalian" --password-stdin
       - run: docker build -t irynalian/serverless:latest .
       - run: docker push irynalian/serverless:latest
+  terraform:
+    parameters:
+      ci_env:
+        description: The AWS environment that will be accessed
+        type: enum
+        enum: ["serverless", "staging", "production"]
+      terraform_action:
+        description: Action for terraform to perform
+        type: enum
+        enum: ["plan", "apply"]
+    docker:
+      - *terraform_image
+    steps:
+      - checkout
+      - run:
+          name: Terraform << parameters.terraform_action >> Infrastructure Changes
+          command: |
+            cat > ~/.terraformrc \<<EOF
+            credentials "app.terraform.io" {
+              token = "${TF_TOKEN}"
+            }
+            EOF
+            export TF_WORKSPACE=<< parameters.ci_env >>
+            cd terraform
+            terraform init
+            if [ << parameters.terraform_action >> = "apply" ]
+            then
+                terraform << parameters.terraform_action >> -auto-approve
+            else
+                terraform << parameters.terraform_action >>
+            fi
   deploy:
     docker:
       - *ci_image
@@ -37,4 +70,24 @@ workflows:
   build:
     jobs:
       - docker-build-push-to-dockerhub
-      - deploy
+      - terraform:
+          name: staging-terraform-plan
+          context: stockx-services
+          ci_env: serverless
+          terraform_action: plan
+          requires:
+            - docker-build-push-to-dockerhub
+      - staging-terraform-approval:
+          type: approval
+          requires:
+            - staging-terraform-plan
+      - terraform:
+          name: staging-terraform-apply
+          context: stockx-services
+          ci_env: staging
+          terraform_action: apply
+          requires:
+            - staging-terraform-approval
+      - deploy:
+          requires:
+            - staging-terraform-apply
