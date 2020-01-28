@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  helm: circleci/helm@0.2.3
-  aws-eks: circleci/aws-eks@0.2.1
+#  helm: circleci/helm@0.2.3
+  aws-eks: circleci/aws-eks@0.2.6
 
 references:
   ci_image: &ci_image
@@ -69,34 +69,35 @@ jobs:
           name: Helm Deploy
           command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
             helm-deploy -f deploy/${CI_ENV}/config.env
-  install-helm-on-cluster:
-    executor: aws-eks/python
-    parameters:
-      cluster-name:
-        description: Cluster name
-        type: string
-    steps:
-      - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: << parameters.cluster-name >>
-          install-kubectl: true
-      - helm/install-helm-on-cluster:
-          enable-cluster-wide-admin-access: true
-  install-helm-chart:
-    executor: aws-eks/python
-    parameters:
-      cluster-name:
-        description: Cluster name
-        type: string
-      ci_env:
-        description: The AWS environment that will be accessed
-        type: enum
-        enum: ["staging", "production"]
-    steps:
-      - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: << parameters.cluster-name >>
-      - helm/install-helm-chart:
-          chart: deploy/charts/
-          release-name: << parameters.ci_env >>-release
+#  install-helm-on-cluster:
+#    executor: aws-eks/python
+#    parameters:
+#      cluster-name:
+#        description: Cluster name
+#        type: string
+#    steps:
+#      - aws-eks/update-kubeconfig-with-authenticator:
+#          cluster-name: << parameters.cluster-name >>
+#          aws-region: ${AWS_REGION}
+#          install-kubectl: true
+#      - helm/install-helm-on-cluster:
+#          enable-cluster-wide-admin-access: true
+#  install-helm-chart:
+#    executor: aws-eks/python
+#    parameters:
+#      cluster-name:
+#        description: Cluster name
+#        type: string
+#      ci_env:
+#        description: The AWS environment that will be accessed
+#        type: enum
+#        enum: ["staging", "production"]
+#    steps:
+#      - aws-eks/update-kubeconfig-with-authenticator:
+#          cluster-name: << parameters.cluster-name >>
+#      - helm/install-helm-chart:
+#          chart: deploy/charts/
+#          release-name: << parameters.ci_env >>-release
 
 workflows:
   build:
@@ -120,14 +121,27 @@ workflows:
           terraform_action: apply
           requires:
             - staging-terraform-approval
-      - install-helm-on-cluster:
+      - aws-eks/install-helm-on-cluster:
           cluster-name: craft.net.ua
+          enable-cluster-wide-admin-access: true
           context: stockx-services
           requires:
             - staging-terraform-apply
-      - install-helm-chart:
-          cluster-name: test-cluster
-          ci_env: staging
+      - aws-eks/install-helm-chart:
+          chart: deploy/charts
+          cluster-name: craft.net.ua
+          release-name: staging-release
           context: stockx-services
           requires:
-            - install-helm-on-cluster
+            - aws-eks/install-helm-on-cluster
+#      - install-helm-on-cluster:
+#          cluster-name: craft.net.ua
+#          context: stockx-services
+#          requires:
+#            - staging-terraform-apply
+#      - install-helm-chart:
+#          cluster-name: test-cluster
+#          ci_env: staging
+#          context: stockx-services
+#          requires:
+#            - install-helm-on-cluster
