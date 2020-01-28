@@ -17,6 +17,12 @@ module "base_label" {
   enabled     = "${var.enabled}"
 }
 
+resource "aws_iam_user" "serverless" {
+  name = "${module.base_label.id}"
+
+  tags = "${merge(module.base_label.tags, map("Type", "service"))}"
+}
+
 module "dynamodb_table" {
   source = "git::https://github.com/cloudposse/terraform-aws-dynamodb?ref=tags/0.15.0"
 
