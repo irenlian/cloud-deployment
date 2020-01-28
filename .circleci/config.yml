@@ -71,7 +71,6 @@ jobs:
             helm-deploy -f deploy/${CI_ENV}/config.env
   install-helm-on-cluster:
     executor: aws-eks/python
-    context: stockx-services
     parameters:
       cluster-name:
         description: Cluster name
@@ -84,7 +83,6 @@ jobs:
           enable-cluster-wide-admin-access: true
   install-helm-chart:
     executor: aws-eks/python
-    context: stockx-services
     parameters:
       cluster-name:
         description: Cluster name
@@ -123,11 +121,13 @@ workflows:
           requires:
             - staging-terraform-approval
       - install-helm-on-cluster:
-            cluster-name: craft.net.ua
-            requires:
-              - staging-terraform-apply
+          cluster-name: craft.net.ua
+          context: stockx-services
+          requires:
+            - staging-terraform-apply
       - install-helm-chart:
           cluster-name: test-cluster
           ci_env: staging
+          context: stockx-services
           requires:
             - install-helm-on-cluster
