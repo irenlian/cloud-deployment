@@ -121,8 +121,11 @@ workflows:
           terraform_action: apply
           requires:
             - staging-terraform-approval
+      - aws-eks/create-cluster:
+          cluster-name: serverless-staging
+          aws-region: ${AWS_REGION}
       - aws-eks/install-helm-on-cluster:
-          cluster-name: craft.net.ua
+          cluster-name: serverless-staging
           enable-cluster-wide-admin-access: true
           context: stockx-services
           aws-region: ${AWS_REGION}
