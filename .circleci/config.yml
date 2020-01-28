@@ -1,5 +1,9 @@
 version: 2.1
 
+orbs:
+  helm: circleci/helm@0.2.3
+  aws-eks: circleci/aws-eks@0.2.1
+
 references:
   ci_image: &ci_image
     image: circleci/node:latest
@@ -41,7 +45,6 @@ jobs:
             export TF_WORKSPACE=<< parameters.ci_env >>
             cd terraform
             terraform init
-            terraform output
             if [ << parameters.terraform_action >> = "apply" ]
             then
                 terraform << parameters.terraform_action >> -auto-approve
@@ -66,6 +69,34 @@ jobs:
           name: Helm Deploy
           command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
             helm-deploy -f deploy/${CI_ENV}/config.env
+  install-helm-on-cluster:
+    executor: aws-eks/python
+    parameters:
+      cluster-name:
+        description: Cluster name
+        type: string
+    steps:
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+          install-kubectl: true
+      - helm/install-helm-on-cluster:
+          enable-cluster-wide-admin-access: true
+  install-helm-chart:
+    executor: aws-eks/python
+    parameters:
+      cluster-name:
+        description: Cluster name
+        type: string
+      ci_env:
+        description: The AWS environment that will be accessed
+        type: enum
+        enum: ["staging", "production"]
+    steps:
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - helm/install-helm-chart:
+          chart: deploy/charts/
+          release-name: << parameters.ci_env >>-release
 
 workflows:
   build:
@@ -89,6 +120,11 @@ workflows:
           terraform_action: apply
           requires:
             - staging-terraform-approval
-      - deploy:
+      - install-helm-on-cluster:
+            cluster-name: craft.net.ua
+            requires:
+              - staging-terraform-apply
+      - install-helm-chart:
+          cluster-name: test-cluster
           requires:
-            - staging-terraform-apply
+            - install-helm-on-cluster
