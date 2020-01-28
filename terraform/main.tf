@@ -9,7 +9,6 @@ terraform {
   }
 }
 
-
 module "base_label" {
   source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
   environment = "${var.environment}"
@@ -66,7 +65,7 @@ data "aws_iam_policy_document" "serverless-dynamodb-access" {
 resource "aws_iam_policy" "serverless-dynamodb-access" {
   name        = "${module.base_label.id}-dynamodb-access"
   description = "Policy to Allow Access to the application DynamoDB tables"
-  policy      = "data.aws_iam_policy_document.serverless-dynamodb-access.json"
+  policy      = data.aws_iam_policy_document.serverless-dynamodb-access.json
 }
 
 resource "aws_iam_user_policy_attachment" "serverless-dynamodb-access-policy-attachment" {
