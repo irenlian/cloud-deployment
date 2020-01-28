@@ -4,19 +4,19 @@ variable "environment" {
 }
 
 variable "application" {
-  type        = "string"
+  type        = string
   default     = "serverless"
   description = "Solution name"
 }
 
 variable "tags" {
-  type        = "map"
+  type        = map
   default     = {}
   description = "Additional tags (e.g. `map('BusinessUnit','XYZ')`"
 }
 
 variable "enabled" {
-  type        = "string"
+  type        = string
   default     = "true"
   description = "Set to false to prevent the module from creating any resources"
 }

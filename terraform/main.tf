@@ -41,3 +41,35 @@ module "dynamodb_table" {
 
   tags = "${module.base_label.tags}"
 }
+
+data "aws_iam_policy_document" "serverless-dynamodb-access" {
+  statement {
+    actions = [
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeTimeToLive",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:UpdateItem",
+      "dynamodb:UpdateTimeToLive",
+    ]
+
+    resources = [
+      "${module.dynamodb_table.table_arn}",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "serverless-dynamodb-access" {
+  name        = "${module.base_label.id}-dynamodb-access"
+  description = "Policy to Allow Access to the application DynamoDB tables"
+  policy      = "${data.aws_iam_policy_document.serverless-dynamodb-access.json}"
+}
+
+resource "aws_iam_user_policy_attachment" "serverless-dynamodb-access-policy-attachment" {
+  user       = "${aws_iam_user.serverless.name}"
+  policy_arn = "${aws_iam_policy.serverless-dynamodb-access.arn}"
+}
