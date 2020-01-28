@@ -125,6 +125,7 @@ workflows:
           cluster-name: craft.net.ua
           enable-cluster-wide-admin-access: true
           context: stockx-services
+          aws-region: ${AWS_REGION}
           requires:
             - staging-terraform-apply
       - aws-eks/install-helm-chart:
@@ -132,6 +133,7 @@ workflows:
           cluster-name: craft.net.ua
           release-name: staging-release
           context: stockx-services
+          aws-region: ${AWS_REGION}
           requires:
             - aws-eks/install-helm-on-cluster
 #      - install-helm-on-cluster:
