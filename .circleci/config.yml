@@ -122,7 +122,6 @@ workflows:
             - staging-terraform-approval
       - install-helm-on-cluster:
             cluster-name: craft.net.ua
-            ci_env: staging
             requires:
               - staging-terraform-apply
       - install-helm-chart:
