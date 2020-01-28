@@ -71,5 +71,5 @@ resource "aws_iam_policy" "serverless-dynamodb-access" {
 
 resource "aws_iam_user_policy_attachment" "serverless-dynamodb-access-policy-attachment" {
   user       = "aws_iam_user.serverless.name"
-  policy_arn = "${aws_iam_policy.serverless-dynamodb-access.arn}"
+  policy_arn = "aws_iam_policy.serverless-dynamodb-access.arn"
 }

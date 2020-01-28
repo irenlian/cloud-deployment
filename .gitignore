@@ -7,3 +7,4 @@ src/.env
 .idea
 .vscode
 dist/
+.terraform
