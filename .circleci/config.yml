@@ -71,6 +71,7 @@ jobs:
             helm-deploy -f deploy/${CI_ENV}/config.env
   install-helm-on-cluster:
     executor: aws-eks/python
+    context: stockx-services
     parameters:
       cluster-name:
         description: Cluster name
@@ -83,6 +84,7 @@ jobs:
           enable-cluster-wide-admin-access: true
   install-helm-chart:
     executor: aws-eks/python
+    context: stockx-services
     parameters:
       cluster-name:
         description: Cluster name
