@@ -41,6 +41,7 @@ jobs:
             export TF_WORKSPACE=<< parameters.ci_env >>
             cd terraform
             terraform init
+            terraform output
             if [ << parameters.terraform_action >> = "apply" ]
             then
                 terraform << parameters.terraform_action >> -auto-approve
