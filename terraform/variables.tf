@@ -20,3 +20,8 @@ variable "enabled" {
   default     = "true"
   description = "Set to false to prevent the module from creating any resources"
 }
+resource "aws_iam_user" "serverless" {
+  name = "module.base_label.id"
+
+  tags = "merge(module.base_label.tags, map("Type", "service"))"
+}
