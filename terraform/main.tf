@@ -11,7 +11,7 @@ terraform {
 
 
 module "base_label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.11.1"
+  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
   environment = "${var.environment}"
   name        = "${var.application}"
   tags        = "${merge(var.tags, map("Application", var.application))}"
