@@ -45,3 +45,4 @@ health_probes:
 envConfig:
   LOG_LEVEL: "debug"
   PORT: "3000"
+  ENVIRONMENT: "staging"
