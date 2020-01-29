@@ -6,7 +6,7 @@ references:
   terraform_image: &terraform_image
     image: hashicorp/terraform:0.12.20
   helm_image: &helm_image
-    image: dtzar/helm-kubectl:latest
+    image: quay.io/reactiveops/ci-images:v8.0.1-alpine
 
 jobs:
   docker-build-push-to-dockerhub:
