@@ -6,7 +6,7 @@ references:
   terraform_image: &terraform_image
     image: hashicorp/terraform:0.12.20
   helm_image: &helm_image
-    image: fluxcd/helm-operator:latest
+    image: dtzar/helm-kubectl:latest
 
 jobs:
   docker-build-push-to-dockerhub:

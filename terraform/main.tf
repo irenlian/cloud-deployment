@@ -18,7 +18,7 @@ module "base_label" {
 }
 
 resource "aws_iam_user" "serverless" {
-  name = "${module.base_label.id}"
+  name = module.base_label.id
 
   tags = "${merge(module.base_label.tags, map("Type", "service"))}"
 }
