@@ -29,5 +29,5 @@ const CacheSchema: Schema = new dynamoose.Schema(
     }
 );
 
-const CacheModel: ModelConstructor<Object, Object> = dynamoose.model('Cache', CacheSchema, expiresConfig);
+const CacheModel: ModelConstructor<Object, Object> = dynamoose.model('staging-serverless-staging-dynamodb', CacheSchema, expiresConfig);
 export default CacheModel;
