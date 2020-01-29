@@ -53,6 +53,7 @@ data "aws_iam_policy_document" "serverless-dynamodb-access" {
       "dynamodb:BatchGetItem",
       "dynamodb:BatchWriteItem",
       "dynamodb:DeleteItem",
+      "dynamodb:DescribeTable",
       "dynamodb:DescribeTimeToLive",
       "dynamodb:GetItem",
       "dynamodb:PutItem",

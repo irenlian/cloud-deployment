@@ -35,6 +35,8 @@
     },
     "homepage": "https://github.com/stockx/koa-service-sample#readme",
     "dependencies": {
+        "aws-sdk": "^2.610.0",
+        "dynamoose": "^1.11.1",
         "koa": "^2.11.0",
         "koa-bodyparser": "^4.2.1",
         "koa-router": "^7.4.0",

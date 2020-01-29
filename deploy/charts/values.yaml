@@ -5,7 +5,7 @@ labels:
   app: &service_name serverless
 
 image:
-  repository: hub.docker.com/r/irynalian/serverless
+  repository:   irynalian/serverless
   tag: {}
 
 hpa:

@@ -1,0 +1,11 @@
+version: '3'
+services:
+  serverless:
+    build:
+      context: .
+      environment:
+        - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+        - AWS_ACCESS_KEY_ID=${AWS_SECRET_ACCESS_KEY}
+        - ENVIRONMENT=${ENVIRONMENT}
+      ports:
+        - 3000:3000

@@ -1,8 +1,8 @@
 version: 2.1
 
-orbs:
+#orbs:
 #  helm: circleci/helm@0.2.3
-  aws-eks: circleci/aws-eks@0.2.6
+#  aws-eks: circleci/aws-eks@0.2.6
 
 references:
   ci_image: &ci_image
@@ -52,23 +52,29 @@ jobs:
                 terraform << parameters.terraform_action >>
             fi
   deploy:
-    docker:
-      - *ci_image
     steps:
       - checkout
       - run:
-          name: Helm Lint
-          command: helm lint --strict -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME}
-      - run:
-          name: Helm Template and Kubeval
-          command: helm template -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME} | kubeval
-      - run:
-          name: Prepare kubectl
-          command: prepare-kubectl
-      - run:
-          name: Helm Deploy
-          command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
-            helm-deploy -f deploy/${CI_ENV}/config.env
+          name: Helm upgrade current deployment
+          command: helm upgrade serverless deploy/charts
+#  deploy:
+#    docker:
+#      - *ci_image
+#    steps:
+#      - checkout
+#      - run:
+#          name: Helm Lint
+#          command: helm lint --strict -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME}
+#      - run:
+#          name: Helm Template and Kubeval
+#          command: helm template -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME} | kubeval
+#      - run:
+#          name: Prepare kubectl
+#          command: prepare-kubectl
+#      - run:
+#          name: Helm Deploy
+#          command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
+#            helm-deploy -f deploy/${CI_ENV}/config.env
 #  install-helm-on-cluster:
 #    executor: aws-eks/python
 #    parameters:
@@ -121,24 +127,26 @@ workflows:
           terraform_action: apply
           requires:
             - staging-terraform-approval
-      - aws-eks/create-cluster:
-          cluster-name: serverless-staging
-          aws-region: ${AWS_REGION}
-      - aws-eks/install-helm-on-cluster:
-          cluster-name: serverless-staging
-          enable-cluster-wide-admin-access: true
-          context: stockx-services
-          aws-region: ${AWS_REGION}
-          requires:
-            - staging-terraform-apply
-      - aws-eks/install-helm-chart:
-          chart: deploy/charts
-          cluster-name: craft.net.ua
-          release-name: staging-release
-          context: stockx-services
-          aws-region: ${AWS_REGION}
-          requires:
-            - aws-eks/install-helm-on-cluster
+#      - aws-eks/create-cluster:
+#          cluster-name: serverless-staging
+#          aws-region: ${AWS_REGION}
+#          requires:
+#            - staging-terraform-apply
+#      - aws-eks/install-helm-on-cluster:
+#          cluster-name: serverless-staging
+#          enable-cluster-wide-admin-access: true
+#          context: stockx-services
+#          aws-region: ${AWS_REGION}
+#          requires:
+#            - aws-eks/create-cluster
+#      - aws-eks/install-helm-chart:
+#          chart: deploy/charts
+#          cluster-name: serverless-staging
+#          release-name: staging-release
+#          context: stockx-services
+#          aws-region: ${AWS_REGION}
+#          requires:
+#            - aws-eks/install-helm-on-cluster
 #      - install-helm-on-cluster:
 #          cluster-name: craft.net.ua
 #          context: stockx-services
