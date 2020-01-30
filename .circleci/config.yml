@@ -13,6 +13,19 @@ references:
       command: |
         echo 'export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_<< parameters.aws_env >>' >> ${BASH_ENV}
         echo 'export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_<< parameters.aws_env >>' >> ${BASH_ENV}
+  set_environment_variables: &set_environment_variables
+    run:
+      name: Set General Environment Variables
+      command: |
+        echo 'export CI_SHA1=$CIRCLE_SHA1' >> ${BASH_ENV}
+        echo 'export CI_BUILD_NUM=$CIRCLE_BUILD_NUM' >> ${BASH_ENV}
+        echo 'export CI_TAG=$CIRCLE_TAG' >> ${BASH_ENV}
+        echo 'export CI_BRANCH=$CIRCLE_BRANCH' >> ${BASH_ENV}
+        echo 'export CI_USERNAME=$CIRCLE_USERNAME' >> ${BASH_ENV}
+        echo 'export COMMIT_MESSAGE=$(git log --oneline --format=%B HEAD~1 | head -n 1)' >> ${BASH_ENV}
+        echo 'export PREVIOUS_COMMIT=$(git rev-parse HEAD~1)' >> ${BASH_ENV}
+        echo 'export NR_APP_ID=$NR_APP_ID' >> ${BASH_ENV}
+        echo 'export NR_APIKEY=$NR_APIKEY' >> ${BASH_ENV}
 
 jobs:
   docker-build-push-to-dockerhub:
@@ -60,15 +73,33 @@ jobs:
       aws_env:
         description: The AWS environment that will be accessed
         type: enum
-        enum: ["STAGING", "PROD"]
+        enum: ["DEV", "STAGING", "PROD"]
+      ci_env:
+        description: The build environment the job is running on
+        type: enum
+        enum: ["staging", "production"]
+      slack_failure_notify:
+        type: boolean
+        default: false
     docker:
-      - *helm_image
+      - *ci_image
     steps:
       - checkout
+      - *set_environment_variables
       - *set_env
       - run:
-          name: Helm upgrade current deployment
-          command: helm upgrade serverless deploy/charts --set AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,AWS_REGION=$AWS_REGION
+          name: Helm Lint
+          command: helm lint --strict -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME}
+      - run:
+          name: Helm Template and Kubeval
+          command: helm template -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME} | kubeval
+      - run:
+          name: Prepare kubectl
+          command: prepare-kubectl
+      - run:
+          name: Helm Deploy
+          command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
+            helm-deploy -f deploy/${CI_ENV}/config.env
 
 workflows:
   build:
