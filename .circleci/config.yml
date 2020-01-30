@@ -125,5 +125,6 @@ workflows:
             - staging-terraform-approval
       - deploy:
           aws_env: STAGING
+          ci_env: staging
           requires:
             - staging-terraform-apply
