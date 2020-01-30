@@ -1,0 +1,48 @@
+{{- if .Values.ingress.external.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-external
+  labels:
+    chart_version: {{ .Chart.Version | quote }}
+    helm_revision: {{ .Release.Revision | quote }}
+    helm_release: {{ .Release.Name | quote }}
+{{ toYaml .Values.labels | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: nginx-external
+spec:
+  rules:
+  - host: {{ .Values.ingress.external.domainName }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .Release.Name }}-helm
+          servicePort: 80
+  tls:
+  - hosts:
+    - {{ .Values.ingress.external.domainName }}
+{{- end }}
+---
+{{- if .Values.ingress.internal.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-internal
+  labels:
+    chart_version: {{ .Chart.Version | quote }}
+    helm_revision: {{ .Release.Revision | quote }}
+    helm_release: {{ .Release.Name | quote }}
+{{ toYaml .Values.labels | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+spec:
+  rules:
+  - host: {{ .Values.ingress.internal.domainName }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .Release.Name }}-helm
+          servicePort: 80
+{{- end }}
