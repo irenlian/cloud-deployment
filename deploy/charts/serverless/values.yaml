@@ -8,6 +8,14 @@ image:
   repository:   irynalian/serverless
   tag: {}
 
+ingress:
+  internal:
+    enabled: true
+    domainName:
+  external:
+    enabled: true
+    domainName:
+
 hpa:
   enabled:
   cpuPercentage: 65

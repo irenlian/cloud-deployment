@@ -1,3 +1,14 @@
+replicas: 2
+
+ingress:
+  internal:
+    domainName: serverless.craft.net.ua
+  external:
+    domainName: serverless.craft.net.ua
+
+pdb:
+  enabled: false
+
 envConfig:
   AWS_ACCESS_KEY_ID: "AKIAZF5ZUJUSDF7E5CC5"
   AWS_REGION: "eu-central-1"
