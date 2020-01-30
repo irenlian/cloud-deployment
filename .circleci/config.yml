@@ -82,7 +82,7 @@ jobs:
         type: boolean
         default: false
     docker:
-      - *ci_image
+      - *helm_image
     steps:
       - checkout
       - *set_environment_variables
