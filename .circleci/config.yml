@@ -89,17 +89,17 @@ jobs:
       - *set_env
       - run:
           name: Helm Lint
-          command: helm lint --strict -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME}
+          command: helm lint --strict -f deploy/<< parameters.ci_env >>/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME}
       - run:
           name: Helm Template and Kubeval
-          command: helm template -f deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME} | kubeval
+          command: helm template -f deploy/<< parameters.ci_env >>/${CIRCLE_PROJECT_REPONAME}.values.yml deploy/charts/${CIRCLE_PROJECT_REPONAME} | kubeval
       - run:
           name: Prepare kubectl
           command: prepare-kubectl
       - run:
           name: Helm Deploy
-          command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/${CI_ENV}/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
-            helm-deploy -f deploy/${CI_ENV}/config.env
+          command: ROK8S_HELM_DEPLOY_EXTRAARGS="--force --atomic --description ${CI_SHA1} --set schema_rambler_password=${SCHEMA_RAMBLER_PASSWORD} --set secretSum=$(sha256sum deploy/<< parameters.ci_env >>/${CIRCLE_PROJECT_REPONAME}-env.secret.sops.yml | awk '{ print $1 }')"
+            helm-deploy -f deploy/<< parameters.ci_env >>/config.env
 
 workflows:
   build:
